@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class GridManagerBackApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(GridManagerBackApplication.class, args);
+		SpringApplication.run(GridManagerBackApplication.class, args); 
 	}
 
 }
