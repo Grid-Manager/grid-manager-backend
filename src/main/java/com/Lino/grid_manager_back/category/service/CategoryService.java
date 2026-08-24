@@ -37,4 +37,11 @@ public class CategoryService {
         category.setAcronym(acronym);
         return mapper.toResponse(repository.save(category));
     }
+
+    @Transactional(readOnly = true)
+    public CategoryResponse findById(Long id) {
+        return mapper.toResponse(repository.findById(id)
+                .orElseThrow(() -> new com.Lino.grid_manager_back.infrastructure.exception.ResourceNotFoundException(
+                        "Categoria n\u00e3o encontrada.")));
+    }
 }
