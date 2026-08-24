@@ -9,6 +9,7 @@ import com.Lino.grid_manager_back.result.entity.Result;
 import com.Lino.grid_manager_back.season.entity.Season;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -52,7 +53,7 @@ public class Pilot {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @OneToOne(fetch = FetchType.LAZY, optional = false, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "license_id", nullable = false, unique = true)
     private License license;
 
