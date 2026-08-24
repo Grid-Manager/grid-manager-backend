@@ -1,5 +1,6 @@
 package com.Lino.grid_manager_back.race.repository;
 
-public interface RaceRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+import com.Lino.grid_manager_back.race.entity.Race;
 
-}
+public interface RaceRepository extends JpaRepository<Race, Long> {}

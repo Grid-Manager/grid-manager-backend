@@ -56,6 +56,12 @@ public class PilotService {
         return mapper.toResponse(pilotRepository.save(pilot));
     }
 
+    @Transactional(readOnly = true)
+    public PilotResponse findById(Long id) {
+        return mapper.toResponse(pilotRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Piloto n\u00e3o encontrado.")));
+    }
+
     private boolean matchesLicensePattern(Category category, String licenseNumber, Long pilotNumber) {
         if ("CATEGORIA-DATA-PILOTO".equals(category.getLicensePattern())) {
             String defaultPattern = "^" + Pattern.quote(category.getAcronym()) + "-\\d{8}-" + pilotNumber + "$";
