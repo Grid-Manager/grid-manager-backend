@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.Lino.grid_manager_back.category.dto.CategoryResponse;
+import com.Lino.grid_manager_back.category.dto.CategoryScoringProfileResponse;
 import com.Lino.grid_manager_back.category.dto.CreateCategoryRequest;
+import com.Lino.grid_manager_back.category.dto.CreateCategoryScoringProfileRequest;
 import com.Lino.grid_manager_back.category.service.CategoryService;
 
 @RestController
@@ -33,4 +35,12 @@ public class CategoryController {
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Categoria encontrada"), @ApiResponse(responseCode = "404", description = "Categoria n\u00e3o encontrada")})
     @GetMapping("/{id}")
     public CategoryResponse findById(@PathVariable Long id) { return service.findById(id); }
+
+    @Operation(summary = "Configura a pontua\u00e7\u00e3o de uma categoria", description = "Define regras por tipo de corrida e data de vig\u00eancia.")
+    @ApiResponses({@ApiResponse(responseCode = "201", description = "Perfil criado"), @ApiResponse(responseCode = "400", description = "Dados inv\u00e1lidos"), @ApiResponse(responseCode = "409", description = "Perfil duplicado")})
+    @PostMapping("/{categoryId}/scoring-profiles")
+    public ResponseEntity<CategoryScoringProfileResponse> createScoringProfile(@PathVariable Long categoryId,
+            @Valid @RequestBody CreateCategoryScoringProfileRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.createScoringProfile(categoryId, request));
+    }
 }
