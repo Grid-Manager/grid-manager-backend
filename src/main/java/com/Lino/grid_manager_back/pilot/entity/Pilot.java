@@ -1,78 +1,68 @@
 package com.Lino.grid_manager_back.pilot.entity;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.Lino.grid_manager_back.category.entity.Category;
+import com.Lino.grid_manager_back.license.entity.License;
 import com.Lino.grid_manager_back.result.entity.Result;
 import com.Lino.grid_manager_back.season.entity.Season;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
+@Builder
+@NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
-@Table(name = "db_pilot")
+@Table(name = "tb_pilot")
 public class Pilot {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    @Max(150)
-    @Min(10)
+    @Column(nullable = false, unique = true, length = 150)
     private String name;
 
     @Column(nullable = false)
-    @Max(60)
-    @Min(18)
     private Integer age;
 
-    @Column(nullable = false)
-    @Max(99)
+    @Column(name = "pilot_number", nullable = false, unique = true)
     private Long pilotNumber;
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "pilot_seasons", 
-        joinColumns = @JoinColumn(name = "season_id"), 
-        inverseJoinColumns = @JoinColumn(name = "pilot_season_id")
-    )
-    private List<Season> seasons;
+    @OneToOne(fetch = FetchType.LAZY, optional = false, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "license_id", nullable = false, unique = true)
+    private License license;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "result_id")
-    private List<Result> results;
+    @Builder.Default
+    @ManyToMany(mappedBy = "pilots", fetch = FetchType.LAZY)
+    private Set<Season> seasons = new HashSet<>();
 
-    public Pilot(@Max(150) @Min(10) String name, @Max(60) @Min(18) Integer age, @Max(99) Long pilotNumber,
-            Category category, List<Season> seasons, List<Result> results) {
-        this.name = name;
-        this.age = age;
-        this.pilotNumber = pilotNumber;
-        this.category = category;
-        this.seasons = seasons;
-        this.results = results;
-    }
+    @Builder.Default
+    @OneToMany(mappedBy = "pilot", fetch = FetchType.LAZY)
+    private Set<Result> results = new HashSet<>();
 
 }
