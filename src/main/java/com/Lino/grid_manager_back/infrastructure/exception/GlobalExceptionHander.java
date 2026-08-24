@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -32,6 +33,11 @@ public class GlobalExceptionHander {
             problem.setDetail(exception.getMessage());
         }
         return problem;
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    ProblemDetail handleAuthentication(AuthenticationException exception) {
+        return problem(HttpStatus.UNAUTHORIZED, "Credenciais inv\u00e1lidas.");
     }
 
     private ProblemDetail problem(HttpStatus status, String detail) {
