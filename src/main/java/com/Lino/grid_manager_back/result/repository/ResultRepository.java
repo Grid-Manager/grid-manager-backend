@@ -9,5 +9,8 @@ public interface ResultRepository extends JpaRepository<Result, Long> {
     boolean existsByRaceIdAndPositionAndRaceStatusPilot(
             Long raceId, Long position, RaceStatusPilot raceStatusPilot);
 
+    boolean existsByRaceIdAndPositionAndRaceStatusPilotAndIdNot(
+            Long raceId, Long position, RaceStatusPilot raceStatusPilot, Long id);
+
     Optional<Result> findByRaceIdAndPilotId(Long raceId, Long pilotId);
 }

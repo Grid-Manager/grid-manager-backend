@@ -1,6 +1,8 @@
 package com.Lino.grid_manager_back.result.service;
 
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.Lino.grid_manager_back.category.entity.CategoryScoringProfile;
@@ -15,9 +17,11 @@ import com.Lino.grid_manager_back.race.entity.Race;
 import com.Lino.grid_manager_back.race.repository.RaceRepository;
 import com.Lino.grid_manager_back.result.dto.CreateResultRequest;
 import com.Lino.grid_manager_back.result.dto.ResultResponse;
+import com.Lino.grid_manager_back.result.dto.UpdateResultRequest;
 import com.Lino.grid_manager_back.result.entity.Result;
 import com.Lino.grid_manager_back.result.mapper.ResultMapper;
 import com.Lino.grid_manager_back.result.repository.ResultRepository;
+import com.Lino.grid_manager_back.infrastructure.dto.PagedResponse;
 
 @Service
 public class ResultService {
@@ -91,6 +95,41 @@ public class ResultService {
                 .orElseThrow(() -> new ResourceNotFoundException("Resultado n\u00e3o encontrado.")));
     }
 
+    @Transactional(readOnly = true)
+    public PagedResponse<ResultResponse> findAll(Pageable pageable) {
+        Page<ResultResponse> page = resultRepository.findAll(pageable).map(mapper::toResponse);
+        return PagedResponse.from(page);
+    }
+
+    @Transactional
+    public ResultResponse update(Long id, UpdateResultRequest request) {
+        Result result = findEntity(id);
+        RaceStatusPilot status = request.raceStatusPilot() == null
+                ? result.getRaceStatusPilot() : request.raceStatusPilot();
+        Long position = request.position() == null ? result.getPosition() : request.position();
+        if (status == RaceStatusPilot.FINISHED
+                && resultRepository.existsByRaceIdAndPositionAndRaceStatusPilotAndIdNot(
+                        result.getRace().getId(), position, RaceStatusPilot.FINISHED, id)) {
+            throw new DuplicateResourceException("A posição final já está ocupada nesta corrida.");
+        }
+
+        mapper.update(request, result);
+        if (status != RaceStatusPilot.FINISHED && isFastestLapPilot(result)) {
+            clearFastestLap(result.getRace());
+        }
+        result.setPoints(calculatePoints(result.getRace(), result));
+        return mapper.toResponse(result);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        Result result = findEntity(id);
+        if (isFastestLapPilot(result)) {
+            clearFastestLap(result.getRace());
+        }
+        resultRepository.delete(result);
+    }
+
     private int calculatePoints(Race race, Result result) {
         if (result.getRaceStatusPilot() != RaceStatusPilot.FINISHED) {
             return 0;
@@ -117,6 +156,21 @@ public class ResultService {
         if (!pilot.getCategory().getId().equals(race.getSeason().getCategory().getId())) {
             throw new IllegalArgumentException("O piloto deve pertencer \u00e0 categoria da corrida.");
         }
+    }
+
+    private Result findEntity(Long id) {
+        return resultRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Resultado não encontrado."));
+    }
+
+    private boolean isFastestLapPilot(Result result) {
+        Pilot pilot = result.getRace().getPilotFasterLap();
+        return pilot != null && pilot.getId().equals(result.getPilot().getId());
+    }
+
+    private void clearFastestLap(Race race) {
+        race.setPilotFasterLap(null);
+        race.setFastLap(null);
     }
 
     private int zeroIfNull(Integer value) {

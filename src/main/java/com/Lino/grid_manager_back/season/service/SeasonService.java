@@ -3,6 +3,8 @@ package com.Lino.grid_manager_back.season.service;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.Lino.grid_manager_back.category.entity.Category;
@@ -12,9 +14,11 @@ import com.Lino.grid_manager_back.pilot.entity.Pilot;
 import com.Lino.grid_manager_back.pilot.repository.PilotRepository;
 import com.Lino.grid_manager_back.season.dto.CreateSeasonRequest;
 import com.Lino.grid_manager_back.season.dto.SeasonResponse;
+import com.Lino.grid_manager_back.season.dto.UpdateSeasonRequest;
 import com.Lino.grid_manager_back.season.entity.Season;
 import com.Lino.grid_manager_back.season.mapper.SeasonMapper;
 import com.Lino.grid_manager_back.season.repository.SeasonRepository;
+import com.Lino.grid_manager_back.infrastructure.dto.PagedResponse;
 
 @Service
 public class SeasonService {
@@ -51,6 +55,38 @@ public class SeasonService {
     public SeasonResponse findById(Long id) {
         return mapper.toResponse(seasonRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Temporada n\u00e3o encontrada.")));
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<SeasonResponse> findAll(Pageable pageable) {
+        Page<SeasonResponse> page = seasonRepository.findAll(pageable).map(mapper::toResponse);
+        return PagedResponse.from(page);
+    }
+
+    @Transactional
+    public SeasonResponse update(Long id, UpdateSeasonRequest request) {
+        Season season = seasonRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Temporada não encontrada."));
+        if (request.name() != null && request.name().isBlank()) {
+            throw new IllegalArgumentException("Nome da temporada não pode ser vazio.");
+        }
+        if (request.year() != null && request.year() < season.getCategory().getFoundingYear()) {
+            throw new IllegalArgumentException("O ano da temporada não pode ser anterior ao da categoria.");
+        }
+        mapper.update(request, season);
+        if (request.name() != null) {
+            season.setName(request.name().trim());
+        }
+        if (request.pilotIds() != null) {
+            season.setPilots(resolvePilots(request.pilotIds(), season.getCategory().getId()));
+        }
+        return mapper.toResponse(season);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        seasonRepository.delete(seasonRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Temporada não encontrada.")));
     }
 
     private Set<Pilot> resolvePilots(Set<Long> pilotIds, Long categoryId) {
