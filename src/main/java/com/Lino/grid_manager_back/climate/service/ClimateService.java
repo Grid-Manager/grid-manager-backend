@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.Lino.grid_manager_back.climate.dto.ClimateResponse;
 import com.Lino.grid_manager_back.climate.dto.CreateClimateRequest;
+import com.Lino.grid_manager_back.climate.dto.UpdateClimateRequest;
 import com.Lino.grid_manager_back.climate.entity.Climate;
 import com.Lino.grid_manager_back.climate.mapper.ClimateMapper;
 import com.Lino.grid_manager_back.climate.repository.ClimateRepository;
@@ -38,7 +39,23 @@ public class ClimateService {
 
     @Transactional(readOnly = true)
     public ClimateResponse findById(Long id) {
-        return mapper.toResponse(climateRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Clima n\u00e3o encontrado.")));
+        return mapper.toResponse(findEntity(id));
+    }
+
+    @Transactional
+    public ClimateResponse update(Long id, UpdateClimateRequest request) {
+        Climate climate = findEntity(id);
+        mapper.update(request, climate);
+        return mapper.toResponse(climate);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        climateRepository.delete(findEntity(id));
+    }
+
+    private Climate findEntity(Long id) {
+        return climateRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Clima n\u00e3o encontrado."));
     }
 }

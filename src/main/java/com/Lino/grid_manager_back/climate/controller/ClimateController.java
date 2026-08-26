@@ -9,11 +9,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.Lino.grid_manager_back.climate.dto.ClimateResponse;
 import com.Lino.grid_manager_back.climate.dto.CreateClimateRequest;
+import com.Lino.grid_manager_back.climate.dto.UpdateClimateRequest;
 import com.Lino.grid_manager_back.climate.service.ClimateService;
 
 @RestController
@@ -33,4 +36,19 @@ public class ClimateController {
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Clima encontrado"), @ApiResponse(responseCode = "404", description = "Clima n\u00e3o encontrado")})
     @GetMapping("/{id}")
     public ClimateResponse findById(@PathVariable Long id) { return service.findById(id); }
+
+    @Operation(summary = "Atualiza um registro clim\u00e1tico")
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "Clima atualizado"), @ApiResponse(responseCode = "400", description = "Dados inv\u00e1lidos"), @ApiResponse(responseCode = "404", description = "Clima n\u00e3o encontrado")})
+    @PatchMapping("/{id}")
+    public ClimateResponse update(@PathVariable Long id, @Valid @RequestBody UpdateClimateRequest request) {
+        return service.update(id, request);
+    }
+
+    @Operation(summary = "Remove um registro clim\u00e1tico")
+    @ApiResponses({@ApiResponse(responseCode = "204", description = "Clima removido"), @ApiResponse(responseCode = "404", description = "Clima n\u00e3o encontrado")})
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }
