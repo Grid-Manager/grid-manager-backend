@@ -5,6 +5,7 @@ import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -38,6 +39,11 @@ public class GlobalExceptionHander {
     @ExceptionHandler(AuthenticationException.class)
     ProblemDetail handleAuthentication(AuthenticationException exception) {
         return problem(HttpStatus.UNAUTHORIZED, "Credenciais inv\u00e1lidas.");
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    ProblemDetail handleDataIntegrity(DataIntegrityViolationException exception) {
+        return problem(HttpStatus.CONFLICT, "A opera\u00e7\u00e3o viola um v\u00ednculo ou regra de unicidade do recurso.");
     }
 
     private ProblemDetail problem(HttpStatus status, String detail) {

@@ -4,6 +4,8 @@ import java.time.Year;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.Lino.grid_manager_back.category.dto.CategoryResponse;
@@ -11,6 +13,7 @@ import com.Lino.grid_manager_back.category.dto.CategoryScoringProfileResponse;
 import com.Lino.grid_manager_back.category.dto.CreateCategoryRequest;
 import com.Lino.grid_manager_back.category.dto.CreateCategoryScoringProfileRequest;
 import com.Lino.grid_manager_back.category.dto.PositionPointsRequest;
+import com.Lino.grid_manager_back.category.dto.UpdateCategoryRequest;
 import com.Lino.grid_manager_back.category.entity.Category;
 import com.Lino.grid_manager_back.category.entity.CategoryScoringProfile;
 import com.Lino.grid_manager_back.category.entity.CategoryScoringRule;
@@ -18,6 +21,8 @@ import com.Lino.grid_manager_back.category.mapper.CategoryMapper;
 import com.Lino.grid_manager_back.category.repository.CategoryScoringProfileRepository;
 import com.Lino.grid_manager_back.category.repository.CategoryRepository;
 import com.Lino.grid_manager_back.infrastructure.exception.DuplicateResourceException;
+import com.Lino.grid_manager_back.infrastructure.exception.ResourceNotFoundException;
+import com.Lino.grid_manager_back.infrastructure.dto.PagedResponse;
 
 @Service
 public class CategoryService {
@@ -51,17 +56,43 @@ public class CategoryService {
 
     @Transactional(readOnly = true)
     public CategoryResponse findById(Long id) {
-        return mapper.toResponse(repository.findById(id)
-                .orElseThrow(() -> new com.Lino.grid_manager_back.infrastructure.exception.ResourceNotFoundException(
-                        "Categoria n\u00e3o encontrada.")));
+        return mapper.toResponse(findEntity(id));
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<CategoryResponse> findAll(Pageable pageable) {
+        Page<CategoryResponse> page = repository.findAll(pageable).map(mapper::toResponse);
+        return PagedResponse.from(page);
+    }
+
+    @Transactional
+    public CategoryResponse update(Long id, UpdateCategoryRequest request) {
+        Category category = findEntity(id);
+        if (request.name() != null) {
+            String name = request.name().trim();
+            if (repository.existsByNameIgnoreCase(name) && !category.getName().equalsIgnoreCase(name)) {
+                throw new DuplicateResourceException("Nome de categoria j\u00e1 cadastrado.");
+            }
+        }
+        if (request.foundingYear() != null && request.foundingYear() > Year.now().getValue()) {
+            throw new IllegalArgumentException("Ano de funda\u00e7\u00e3o n\u00e3o pode estar no futuro.");
+        }
+        mapper.update(request, category);
+        if (request.name() != null) {
+            category.setName(request.name().trim());
+        }
+        return mapper.toResponse(category);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        repository.delete(findEntity(id));
     }
 
     @Transactional
     public CategoryScoringProfileResponse createScoringProfile(
             Long categoryId, CreateCategoryScoringProfileRequest request) {
-        Category category = repository.findById(categoryId)
-                .orElseThrow(() -> new com.Lino.grid_manager_back.infrastructure.exception.ResourceNotFoundException(
-                        "Categoria n\u00e3o encontrada."));
+        Category category = findEntity(categoryId);
         if (scoringProfileRepository.existsByCategoryIdAndRaceTypeAndEffectiveFrom(
                 categoryId, request.raceType(), request.effectiveFrom())) {
             throw new DuplicateResourceException("J\u00e1 existe perfil de pontua\u00e7\u00e3o para esta data e tipo de corrida.");
@@ -89,5 +120,9 @@ public class CategoryService {
                 .collect(java.util.stream.Collectors.toSet());
         return new CategoryScoringProfileResponse(profile.getId(), profile.getCategory().getId(), profile.getRaceType(),
                 profile.getEffectiveFrom(), profile.getFastestLapBonus(), profile.isFastestLapRequiresTopTen(), rules);
+    }
+
+    private Category findEntity(Long id) {
+        return repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Categoria n\u00e3o encontrada."));
     }
 }
