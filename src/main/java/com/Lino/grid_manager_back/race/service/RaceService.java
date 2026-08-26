@@ -52,6 +52,26 @@ public class RaceService {
                 .orElseThrow(() -> new ResourceNotFoundException("Corrida n\u00e3o encontrada.")));
     }
 
+    @Transactional
+    public RaceResponse start(Long id) {
+        Race race = findEntity(id);
+        if (race.getRaceStatus() != RaceStatus.SCHEDULED) {
+            throw new IllegalArgumentException("A corrida s\u00f3 pode ser iniciada quando estiver agendada.");
+        }
+        race.setRaceStatus(RaceStatus.IN_PROGRESS);
+        return mapper.toResponse(race);
+    }
+
+    @Transactional
+    public RaceResponse finish(Long id) {
+        Race race = findEntity(id);
+        if (race.getRaceStatus() != RaceStatus.IN_PROGRESS) {
+            throw new IllegalArgumentException("A corrida s\u00f3 pode ser finalizada quando estiver em andamento.");
+        }
+        race.setRaceStatus(RaceStatus.FINISHED);
+        return mapper.toResponse(race);
+    }
+
     @Transactional(readOnly = true)
     public PagedResponse<RaceResponse> findAll(Pageable pageable) {
         Page<RaceResponse> page = raceRepository.findAll(pageable).map(mapper::toResponse);

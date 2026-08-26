@@ -45,9 +45,13 @@ public class ResultService {
     public ResultResponse create(CreateResultRequest request) {
         Race race = raceRepository.findById(request.raceId())
                 .orElseThrow(() -> new ResourceNotFoundException("Corrida n\u00e3o encontrada."));
+        if (race.getRaceStatus() == com.Lino.grid_manager_back.domain.enums.RaceStatus.SCHEDULED) {
+            throw new IllegalArgumentException("Resultados s\u00f3 podem ser registrados durante ou ap\u00f3s a corrida.");
+        }
         Pilot pilot = pilotRepository.findById(request.pilotId())
                 .orElseThrow(() -> new ResourceNotFoundException("Piloto n\u00e3o encontrado."));
         validatePilotBelongsToRaceCategory(pilot, race);
+        validatePilotIsRegisteredInSeason(pilot, race);
         if (resultRepository.findByRaceIdAndPilotId(race.getId(), pilot.getId()).isPresent()) {
             throw new DuplicateResourceException("J\u00e1 existe resultado para este piloto na corrida.");
         }
@@ -77,6 +81,12 @@ public class ResultService {
         if (result.getRaceStatusPilot() != RaceStatusPilot.FINISHED) {
             throw new IllegalArgumentException("A volta mais r\u00e1pida requer um piloto com resultado finalizado.");
         }
+        if (race.getRaceStatus() == com.Lino.grid_manager_back.domain.enums.RaceStatus.SCHEDULED) {
+            throw new IllegalArgumentException("A volta mais r\u00e1pida s\u00f3 pode ser registrada durante ou ap\u00f3s a corrida.");
+        }
+        if (fastLap == null || fastLap.isBlank()) {
+            throw new IllegalArgumentException("O tempo da volta mais r\u00e1pida \u00e9 obrigat\u00f3rio.");
+        }
         if (race.getPilotFasterLap() != null && !race.getPilotFasterLap().getId().equals(pilotId)) {
             Result previous = resultRepository.findByRaceIdAndPilotId(raceId, race.getPilotFasterLap().getId())
                     .orElseThrow(() -> new ResourceNotFoundException("Resultado da volta mais r\u00e1pida n\u00e3o encontrado."));
@@ -84,7 +94,7 @@ public class ResultService {
             previous.setPoints(calculatePoints(race, previous));
         }
         race.setPilotFasterLap(result.getPilot());
-        race.setFastLap(fastLap);
+        race.setFastLap(fastLap.trim());
         result.setPoints(calculatePoints(race, result));
         return mapper.toResponse(result);
     }
@@ -155,6 +165,14 @@ public class ResultService {
     private void validatePilotBelongsToRaceCategory(Pilot pilot, Race race) {
         if (!pilot.getCategory().getId().equals(race.getSeason().getCategory().getId())) {
             throw new IllegalArgumentException("O piloto deve pertencer \u00e0 categoria da corrida.");
+        }
+    }
+
+    private void validatePilotIsRegisteredInSeason(Pilot pilot, Race race) {
+        boolean isRegistered = race.getSeason().getPilots().stream()
+                .anyMatch(seasonPilot -> seasonPilot.getId().equals(pilot.getId()));
+        if (!isRegistered) {
+            throw new IllegalArgumentException("O piloto deve estar inscrito na temporada da corrida.");
         }
     }
 

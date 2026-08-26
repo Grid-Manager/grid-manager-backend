@@ -40,6 +40,11 @@ public class SeasonController {
     @GetMapping("/{id}")
     public SeasonResponse findById(@PathVariable Long id) { return service.findById(id); }
 
+    @Operation(summary = "Finaliza uma temporada", description = "Define o vencedor pela maior pontua\u00e7\u00e3o ap\u00f3s a finaliza\u00e7\u00e3o de todas as corridas.")
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "Temporada finalizada"), @ApiResponse(responseCode = "400", description = "Corridas pendentes, empate ou resultados ausentes"), @ApiResponse(responseCode = "404", description = "Temporada ou piloto n\u00e3o encontrado")})
+    @PatchMapping("/{id}/finish")
+    public SeasonResponse finish(@PathVariable Long id) { return service.finish(id); }
+
     @Operation(summary = "Lista temporadas", description = "Retorna temporadas paginadas.")
     @ApiResponses(@ApiResponse(responseCode = "200", description = "Lista paginada"))
     @GetMapping

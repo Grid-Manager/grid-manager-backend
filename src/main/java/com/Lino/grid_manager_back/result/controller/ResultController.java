@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.Lino.grid_manager_back.result.dto.CreateResultRequest;
 import com.Lino.grid_manager_back.result.dto.ResultResponse;
 import com.Lino.grid_manager_back.result.dto.UpdateResultRequest;
+import com.Lino.grid_manager_back.race.dto.FastestLapRequest;
 import com.Lino.grid_manager_back.result.service.ResultService;
 import com.Lino.grid_manager_back.infrastructure.dto.PagedResponse;
 
@@ -39,6 +40,14 @@ public class ResultController {
     @ApiResponses({@ApiResponse(responseCode = "200", description = "Resultado encontrado"), @ApiResponse(responseCode = "404", description = "Resultado n\u00e3o encontrado")})
     @GetMapping("/{id}")
     public ResultResponse findById(@PathVariable Long id) { return service.findById(id); }
+
+    @Operation(summary = "Registra a volta mais r\u00e1pida", description = "Atribui a volta a um piloto com resultado finalizado.")
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "Volta mais r\u00e1pida registrada"), @ApiResponse(responseCode = "400", description = "Dados ou status inv\u00e1lidos"), @ApiResponse(responseCode = "404", description = "Corrida, piloto ou resultado n\u00e3o encontrado")})
+    @PatchMapping("/races/{raceId}/fastest-lap")
+    public ResultResponse registerFastestLap(@PathVariable Long raceId,
+            @Valid @RequestBody FastestLapRequest request) {
+        return service.registerFastestLap(raceId, request.pilotId(), request.fastLap());
+    }
 
     @Operation(summary = "Lista resultados", description = "Retorna resultados paginados.")
     @ApiResponses(@ApiResponse(responseCode = "200", description = "Lista paginada"))

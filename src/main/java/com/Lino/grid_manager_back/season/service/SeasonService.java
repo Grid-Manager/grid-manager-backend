@@ -12,6 +12,8 @@ import com.Lino.grid_manager_back.category.repository.CategoryRepository;
 import com.Lino.grid_manager_back.infrastructure.exception.ResourceNotFoundException;
 import com.Lino.grid_manager_back.pilot.entity.Pilot;
 import com.Lino.grid_manager_back.pilot.repository.PilotRepository;
+import com.Lino.grid_manager_back.race.repository.RaceRepository;
+import com.Lino.grid_manager_back.result.repository.ResultRepository;
 import com.Lino.grid_manager_back.season.dto.CreateSeasonRequest;
 import com.Lino.grid_manager_back.season.dto.SeasonResponse;
 import com.Lino.grid_manager_back.season.dto.UpdateSeasonRequest;
@@ -26,13 +28,18 @@ public class SeasonService {
     private final CategoryRepository categoryRepository;
     private final PilotRepository pilotRepository;
     private final SeasonMapper mapper;
+    private final RaceRepository raceRepository;
+    private final ResultRepository resultRepository;
 
     public SeasonService(SeasonRepository seasonRepository, CategoryRepository categoryRepository,
-            PilotRepository pilotRepository, SeasonMapper mapper) {
+            PilotRepository pilotRepository, SeasonMapper mapper, RaceRepository raceRepository,
+            ResultRepository resultRepository) {
         this.seasonRepository = seasonRepository;
         this.categoryRepository = categoryRepository;
         this.pilotRepository = pilotRepository;
         this.mapper = mapper;
+        this.raceRepository = raceRepository;
+        this.resultRepository = resultRepository;
     }
 
     @Transactional
@@ -87,6 +94,37 @@ public class SeasonService {
     public void delete(Long id) {
         seasonRepository.delete(seasonRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Temporada não encontrada.")));
+    }
+
+    @Transactional
+    public SeasonResponse finish(Long id) {
+        Season season = seasonRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Temporada n\u00e3o encontrada."));
+        if (!raceRepository.existsBySeasonId(id)) {
+            throw new IllegalArgumentException("A temporada precisa ter ao menos uma corrida para ser finalizada.");
+        }
+        if (raceRepository.existsBySeasonIdAndRaceStatusNot(id,
+                com.Lino.grid_manager_back.domain.enums.RaceStatus.FINISHED)) {
+            throw new IllegalArgumentException("Todas as corridas da temporada devem estar finalizadas.");
+        }
+        java.util.List<ResultRepository.SeasonPilotScore> standings = resultRepository.sumPointsBySeasonId(id);
+        if (standings.isEmpty()) {
+            throw new IllegalArgumentException("A temporada n\u00e3o possui resultados para definir o vencedor.");
+        }
+        long highestScore = standings.stream().mapToLong(ResultRepository.SeasonPilotScore::getPoints).max()
+                .orElseThrow();
+        java.util.List<ResultRepository.SeasonPilotScore> leaders = standings.stream()
+                .filter(score -> score.getPoints() == highestScore).toList();
+        if (leaders.size() != 1) {
+            throw new IllegalArgumentException("N\u00e3o \u00e9 poss\u00edvel definir o vencedor enquanto houver empate na pontua\u00e7\u00e3o.");
+        }
+        Long winnerId = leaders.getFirst().getPilotId();
+        if (season.getPilots().stream().noneMatch(pilot -> pilot.getId().equals(winnerId))) {
+            throw new IllegalArgumentException("O vencedor deve estar inscrito na temporada.");
+        }
+        season.setWinnerPilot(pilotRepository.findById(winnerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Piloto vencedor n\u00e3o encontrado.")));
+        return mapper.toResponse(season);
     }
 
     private Set<Pilot> resolvePilots(Set<Long> pilotIds, Long categoryId) {

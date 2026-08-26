@@ -6,6 +6,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -51,9 +52,10 @@ class ResultServiceTest {
                 scoringProfileRepository, mapper);
         Category category = Category.builder().id(3L).build();
         Pilot pilot = Pilot.builder().id(9L).category(category).build();
+        Season season = Season.builder().category(category).pilots(Set.of(pilot)).build();
         Race race = Race.builder()
                 .id(5L)
-                .season(Season.builder().category(category).build())
+                .season(season)
                 .raceType(RaceType.STANDARD)
                 .build();
         Result result = Result.builder().position(4L).raceStatusPilot(RaceStatusPilot.DSQ).build();

@@ -40,6 +40,16 @@ public class RaceController {
     @GetMapping("/{id}")
     public RaceResponse findById(@PathVariable Long id) { return service.findById(id); }
 
+    @Operation(summary = "Inicia uma corrida")
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "Corrida iniciada"), @ApiResponse(responseCode = "400", description = "Status inv\u00e1lido"), @ApiResponse(responseCode = "404", description = "Corrida n\u00e3o encontrada")})
+    @PatchMapping("/{id}/start")
+    public RaceResponse start(@PathVariable Long id) { return service.start(id); }
+
+    @Operation(summary = "Finaliza uma corrida")
+    @ApiResponses({@ApiResponse(responseCode = "200", description = "Corrida finalizada"), @ApiResponse(responseCode = "400", description = "Status inv\u00e1lido"), @ApiResponse(responseCode = "404", description = "Corrida n\u00e3o encontrada")})
+    @PatchMapping("/{id}/finish")
+    public RaceResponse finish(@PathVariable Long id) { return service.finish(id); }
+
     @Operation(summary = "Lista corridas", description = "Retorna corridas paginadas.")
     @ApiResponses(@ApiResponse(responseCode = "200", description = "Lista paginada"))
     @GetMapping
