@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.Lino.grid_manager_back.domain.enums.RaceType;
+import com.Lino.grid_manager_back.season.entity.Season;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -39,6 +40,10 @@ public class CategoryScoringProfile {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "season_id")
+    private Season season;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "race_type", nullable = false, length = 20)

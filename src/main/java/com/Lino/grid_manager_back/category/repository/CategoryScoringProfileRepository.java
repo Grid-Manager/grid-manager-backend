@@ -7,9 +7,12 @@ import com.Lino.grid_manager_back.category.entity.CategoryScoringProfile;
 import com.Lino.grid_manager_back.domain.enums.RaceType;
 
 public interface CategoryScoringProfileRepository extends JpaRepository<CategoryScoringProfile, Long> {
-    boolean existsByCategoryIdAndRaceTypeAndEffectiveFrom(Long categoryId, RaceType raceType,
-            LocalDate effectiveFrom);
+    boolean existsByCategoryIdAndSeasonIdAndRaceTypeAndEffectiveFrom(Long categoryId, Long seasonId,
+            RaceType raceType, LocalDate effectiveFrom);
 
-    Optional<CategoryScoringProfile> findFirstByCategoryIdAndRaceTypeAndEffectiveFromLessThanEqualOrderByEffectiveFromDesc(
+    Optional<CategoryScoringProfile> findFirstByCategoryIdAndSeasonIdIsNullAndRaceTypeAndEffectiveFromLessThanEqualOrderByEffectiveFromDesc(
             Long categoryId, RaceType raceType, LocalDate effectiveFrom);
+
+    Optional<CategoryScoringProfile> findFirstByCategoryIdAndSeasonIdAndRaceTypeAndEffectiveFromLessThanEqualOrderByEffectiveFromDesc(
+            Long categoryId, Long seasonId, RaceType raceType, LocalDate effectiveFrom);
 }

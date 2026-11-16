@@ -23,17 +23,21 @@ import com.Lino.grid_manager_back.category.repository.CategoryRepository;
 import com.Lino.grid_manager_back.infrastructure.exception.DuplicateResourceException;
 import com.Lino.grid_manager_back.infrastructure.exception.ResourceNotFoundException;
 import com.Lino.grid_manager_back.infrastructure.dto.PagedResponse;
+import com.Lino.grid_manager_back.season.entity.Season;
+import com.Lino.grid_manager_back.season.repository.SeasonRepository;
 
 @Service
 public class CategoryService {
     private final CategoryRepository repository;
     private final CategoryScoringProfileRepository scoringProfileRepository;
+    private final SeasonRepository seasonRepository;
     private final CategoryMapper mapper;
 
     public CategoryService(CategoryRepository repository, CategoryScoringProfileRepository scoringProfileRepository,
-            CategoryMapper mapper) {
+            SeasonRepository seasonRepository, CategoryMapper mapper) {
         this.repository = repository;
         this.scoringProfileRepository = scoringProfileRepository;
+        this.seasonRepository = seasonRepository;
         this.mapper = mapper;
     }
 
@@ -93,8 +97,13 @@ public class CategoryService {
     public CategoryScoringProfileResponse createScoringProfile(
             Long categoryId, CreateCategoryScoringProfileRequest request) {
         Category category = findEntity(categoryId);
-        if (scoringProfileRepository.existsByCategoryIdAndRaceTypeAndEffectiveFrom(
-                categoryId, request.raceType(), request.effectiveFrom())) {
+        Season season = request.seasonId() == null ? null : seasonRepository.findById(request.seasonId())
+                .orElseThrow(() -> new ResourceNotFoundException("Temporada não encontrada."));
+        if (season != null && !season.getCategory().getId().equals(categoryId)) {
+            throw new IllegalArgumentException("A temporada deve pertencer à categoria informada.");
+        }
+        if (scoringProfileRepository.existsByCategoryIdAndSeasonIdAndRaceTypeAndEffectiveFrom(
+                categoryId, request.seasonId(), request.raceType(), request.effectiveFrom())) {
             throw new DuplicateResourceException("J\u00e1 existe perfil de pontua\u00e7\u00e3o para esta data e tipo de corrida.");
         }
         Set<Integer> positions = new HashSet<>();
@@ -103,6 +112,7 @@ public class CategoryService {
         }
         CategoryScoringProfile profile = CategoryScoringProfile.builder()
                 .category(category)
+                .season(season)
                 .raceType(request.raceType())
                 .effectiveFrom(request.effectiveFrom())
                 .fastestLapBonus(request.fastestLapBonus())
@@ -118,7 +128,8 @@ public class CategoryService {
         Set<PositionPointsRequest> rules = profile.getPositionRules().stream()
                 .map(rule -> new PositionPointsRequest(rule.getFinishingPosition(), rule.getPoints()))
                 .collect(java.util.stream.Collectors.toSet());
-        return new CategoryScoringProfileResponse(profile.getId(), profile.getCategory().getId(), profile.getRaceType(),
+        return new CategoryScoringProfileResponse(profile.getId(), profile.getCategory().getId(),
+                profile.getSeason() == null ? null : profile.getSeason().getId(), profile.getRaceType(),
                 profile.getEffectiveFrom(), profile.getFastestLapBonus(), profile.isFastestLapRequiresTopTen(), rules);
     }
 

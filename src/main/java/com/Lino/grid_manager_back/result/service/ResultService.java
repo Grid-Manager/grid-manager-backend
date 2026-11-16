@@ -134,9 +134,16 @@ public class ResultService {
         if (result.getRaceStatusPilot() != RaceStatusPilot.FINISHED) {
             return 0;
         }
+        Long categoryId = race.getSeason().getCategory().getId();
+        Long seasonId = race.getSeason().getId();
         Optional<CategoryScoringProfile> profile = scoringProfileRepository
-                .findFirstByCategoryIdAndRaceTypeAndEffectiveFromLessThanEqualOrderByEffectiveFromDesc(
-                        race.getSeason().getCategory().getId(), race.getRaceType(), race.getRealizationDate());
+                .findFirstByCategoryIdAndSeasonIdAndRaceTypeAndEffectiveFromLessThanEqualOrderByEffectiveFromDesc(
+                        categoryId, seasonId, race.getRaceType(), race.getRealizationDate());
+        if (profile.isEmpty()) {
+            profile = scoringProfileRepository
+                    .findFirstByCategoryIdAndSeasonIdIsNullAndRaceTypeAndEffectiveFromLessThanEqualOrderByEffectiveFromDesc(
+                            categoryId, race.getRaceType(), race.getRealizationDate());
+        }
         if (profile.isEmpty()) {
             throw new IllegalStateException("N\u00e3o h\u00e1 perfil de pontua\u00e7\u00e3o vigente para a categoria e tipo de corrida.");
         }

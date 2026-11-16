@@ -6,12 +6,16 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
+import java.time.LocalDate;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.Lino.grid_manager_back.category.entity.Category;
+import com.Lino.grid_manager_back.category.entity.CategoryScoringProfile;
+import com.Lino.grid_manager_back.category.entity.CategoryScoringRule;
 import com.Lino.grid_manager_back.category.repository.CategoryScoringProfileRepository;
 import com.Lino.grid_manager_back.domain.enums.RaceStatusPilot;
 import com.Lino.grid_manager_back.domain.enums.RaceType;
@@ -44,6 +48,54 @@ class ResultServiceTest {
 
     @Mock
     private ResultMapper mapper;
+
+    @Test
+    void usesSeasonScoringOverrideForMatchingRace() {
+        ResultService service = new ResultService(resultRepository, pilotRepository, raceRepository,
+                scoringProfileRepository, mapper);
+        Category category = Category.builder().id(3L).build();
+        Season season = Season.builder().id(7L).category(category).build();
+        Pilot pilot = Pilot.builder().id(9L).category(category).build();
+        Race race = Race.builder()
+                .id(5L)
+                .season(season)
+                .realizationDate(LocalDate.of(2026, 3, 15))
+                .raceType(RaceType.STANDARD)
+                .build();
+        CategoryScoringProfile override = CategoryScoringProfile.builder()
+                .category(category)
+                .season(season)
+                .raceType(RaceType.STANDARD)
+                .effectiveFrom(LocalDate.of(2026, 1, 1))
+                .fastestLapBonus(0)
+                .fastestLapRequiresTopTen(false)
+                .positionRules(Set.of(CategoryScoringRule.builder()
+                        .finishingPosition(1)
+                        .points(42)
+                        .build()))
+                .build();
+        Result result = Result.builder().position(1L).raceStatusPilot(RaceStatusPilot.FINISHED).build();
+        ResultResponse response = new ResultResponse(1L, 1L, 42, RaceStatusPilot.FINISHED,
+                0, 0, 0, 0, 9L, 5L);
+
+        when(raceRepository.findById(5L)).thenReturn(Optional.of(race));
+        when(pilotRepository.findById(9L)).thenReturn(Optional.of(pilot));
+        when(resultRepository.findByRaceIdAndPilotId(5L, 9L)).thenReturn(Optional.empty());
+        when(mapper.toEntity(any(CreateResultRequest.class))).thenReturn(result);
+        when(scoringProfileRepository
+                .findFirstByCategoryIdAndSeasonIdAndRaceTypeAndEffectiveFromLessThanEqualOrderByEffectiveFromDesc(
+                        3L, 7L, RaceType.STANDARD, LocalDate.of(2026, 3, 15)))
+                .thenReturn(Optional.of(override));
+        when(resultRepository.save(any(Result.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(mapper.toResponse(any(Result.class))).thenReturn(response);
+
+        service.create(new CreateResultRequest(1L, RaceStatusPilot.FINISHED,
+                null, null, null, null, 9L, 5L));
+
+        ArgumentCaptor<Result> savedResult = ArgumentCaptor.forClass(Result.class);
+        org.mockito.Mockito.verify(resultRepository).save(savedResult.capture());
+        assertEquals(42, savedResult.getValue().getPoints());
+    }
 
     @Test
     void assignsZeroPointsToDisqualifiedPilot() {

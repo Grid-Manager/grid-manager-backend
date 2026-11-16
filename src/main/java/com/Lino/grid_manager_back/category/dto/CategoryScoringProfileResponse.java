@@ -7,6 +7,7 @@ import com.Lino.grid_manager_back.domain.enums.RaceType;
 public record CategoryScoringProfileResponse(
         Long id,
         Long categoryId,
+        Long seasonId,
         RaceType raceType,
         LocalDate effectiveFrom,
         Integer fastestLapBonus,

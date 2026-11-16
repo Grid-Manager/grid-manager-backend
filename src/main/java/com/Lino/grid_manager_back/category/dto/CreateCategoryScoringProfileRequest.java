@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
 public record CreateCategoryScoringProfileRequest(
+        Long seasonId,
         @NotNull RaceType raceType,
         @NotNull LocalDate effectiveFrom,
         @NotNull @PositiveOrZero Integer fastestLapBonus,

@@ -148,6 +148,7 @@ As respostas paginadas seguem o contrato:
 - Corridas pertencem a uma temporada; data, horário, voltas e extensão do circuito são validados.
 - Resultados de pilotos desclassificados ou que não terminaram recebem zero ponto.
 - Pontuação é definida por categoria, tipo de corrida e data de vigência, incluindo bônus de volta mais rápida quando aplicável.
+- Um perfil pode informar `seasonId` em `POST /api/v1/categories/{categoryId}/scoring-profiles`. O perfil vigente da temporada tem precedência; sem um perfil correspondente, aplica-se o perfil vigente da categoria.
 
 Erros de validação, duplicidade e recurso inexistente são retornados como `ProblemDetail`, em conformidade com RFC 7807.
 
