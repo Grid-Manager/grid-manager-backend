@@ -54,6 +54,8 @@ As propriedades locais estão em `src/main/resources/application.properties`.
 | Variável | Obrigatória | Uso |
 | --- | --- | --- |
 | `GRID_MANAGER_JWT_SECRET` | Sim, para registro e login | Chave de assinatura HMAC do JWT. Mínimo de 32 caracteres. |
+| `GRID_MANAGER_ADMIN_EMAIL` | Não | E-mail da primeira conta administrativa a ser criada no startup. Configure junto com a senha. |
+| `GRID_MANAGER_ADMIN_PASSWORD` | Não | Senha da primeira conta `ADMIN`; use um secret fora do repositório. Entre 8 e 72 caracteres. |
 | `GRID_MANAGER_OPENAI_API_KEY` | Não | Habilita a moderação remota de nomes de piloto quando configurada. |
 
 Para habilitar a moderação remota, ajuste também `grid-manager.moderation.openai-enabled=true`. Em ambientes compartilhados, use variáveis de ambiente ou o mecanismo de secrets da plataforma; não coloque tokens e senhas no arquivo de propriedades.
@@ -91,11 +93,13 @@ Exemplo de registro:
 }
 ```
 
-Todas as demais rotas exigem:
+Leituras `GET` de categorias, pilotos, licenças, temporadas, corridas, clima e resultados são públicas. Operações de escrita nesses recursos exigem uma conta `ADMIN`:
 
 ```http
 Authorization: Bearer <accessToken>
 ```
+
+O cadastro público sempre cria contas `USER` e não permite escolher ou promover papéis. Para criar o primeiro `ADMIN`, configure `GRID_MANAGER_ADMIN_EMAIL` e `GRID_MANAGER_ADMIN_PASSWORD` no ambiente e inicie a aplicação. O bootstrap armazena a senha com BCrypt, não altera uma conta `ADMIN` já existente e interrompe o startup se o e-mail já pertencer a uma conta `USER`. Sem as duas variáveis, nenhum administrador é criado automaticamente.
 
 Senhas são armazenadas com BCrypt. O token expira em duas horas por padrão; esse período é configurado por `grid-manager.jwt.expiration`.
 
