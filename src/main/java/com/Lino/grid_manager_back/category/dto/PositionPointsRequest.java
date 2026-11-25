@@ -5,4 +5,4 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 
 public record PositionPointsRequest(
-        @NotNull @Positive Integer position, @NotNull @PositiveOrZero Integer points) {}
+    @NotNull @Positive Integer position, @NotNull @PositiveOrZero Integer points) {}

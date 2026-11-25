@@ -23,16 +23,44 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "tb_climate")
-@Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Climate {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
-    @Column(name = "current_temp", nullable = false) private Double currentTemperature;
-    @Column(name = "track_temp", nullable = false) private Double trackTemperature;
-    @Column(name = "grip_rate", nullable = false) private Double gripRate;
-    @Column(name = "wind_speed", nullable = false) private Double windSpeed;
-    @Enumerated(EnumType.STRING) @Column(name = "wind_direction", nullable = false, length = 50) private WindDirection windDirection;
-    @Column(name = "rain_chance", nullable = false) private Double rainChance;
-    @Enumerated(EnumType.STRING) @Column(name = "track_surface", nullable = false, length = 50) private TrackSurface trackSurface;
-    @Enumerated(EnumType.STRING) @Column(name = "rain_intensity", nullable = false, length = 50) private RainIntensity rainIntensity;
-    @OneToOne(fetch = FetchType.LAZY, optional = false) @JoinColumn(name = "race_id", nullable = false, unique = true) private Race race;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
+
+  @Column(name = "current_temp", nullable = false)
+  private Double currentTemperature;
+
+  @Column(name = "track_temp", nullable = false)
+  private Double trackTemperature;
+
+  @Column(name = "grip_rate", nullable = false)
+  private Double gripRate;
+
+  @Column(name = "wind_speed", nullable = false)
+  private Double windSpeed;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "wind_direction", nullable = false, length = 50)
+  private WindDirection windDirection;
+
+  @Column(name = "rain_chance", nullable = false)
+  private Double rainChance;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "track_surface", nullable = false, length = 50)
+  private TrackSurface trackSurface;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "rain_intensity", nullable = false, length = 50)
+  private RainIntensity rainIntensity;
+
+  @OneToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "race_id", nullable = false, unique = true)
+  private Race race;
 }

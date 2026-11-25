@@ -47,6 +47,14 @@ Para encerrar o banco local:
 docker compose down
 ```
 
+## Publicação no Render
+
+O arquivo `render.yaml` define uma API Docker de demonstração e um PostgreSQL 16 com acesso privado. Crie um Blueprint apontando para a branch que contém esses arquivos. O Render injeta as credenciais do banco e gera a chave JWT. A verificação de saúde consulta `GET /api/v1/categories`.
+
+Para habilitar a gestão no serviço publicado, configure `GRID_MANAGER_ADMIN_EMAIL` e `GRID_MANAGER_ADMIN_PASSWORD` como segredos do serviço antes de reiniciá-lo. Conecte o frontend com `API_BASE_URL=https://<serviço>.onrender.com` no ambiente do servidor Next.js.
+
+O Blueprint usa os planos Free. A API pode hibernar e o banco gratuito expira após 30 dias. Consulte os [limites do plano gratuito](https://render.com/docs/free) antes de cadastrar dados que precisem ser preservados.
+
 ## Configuração
 
 As propriedades locais estão em `src/main/resources/application.properties`.
@@ -54,6 +62,8 @@ As propriedades locais estão em `src/main/resources/application.properties`.
 | Variável | Obrigatória | Uso |
 | --- | --- | --- |
 | `GRID_MANAGER_JWT_SECRET` | Sim, para registro e login | Chave de assinatura HMAC do JWT. Mínimo de 32 caracteres. |
+| `GRID_MANAGER_ADMIN_EMAIL` | Não | E-mail da primeira conta administrativa a ser criada no startup. Configure junto com a senha. |
+| `GRID_MANAGER_ADMIN_PASSWORD` | Não | Senha da primeira conta `ADMIN`; use um secret fora do repositório. Entre 8 e 72 caracteres. |
 | `GRID_MANAGER_OPENAI_API_KEY` | Não | Habilita a moderação remota de nomes de piloto quando configurada. |
 
 Para habilitar a moderação remota, ajuste também `grid-manager.moderation.openai-enabled=true`. Em ambientes compartilhados, use variáveis de ambiente ou o mecanismo de secrets da plataforma; não coloque tokens e senhas no arquivo de propriedades.
@@ -91,11 +101,13 @@ Exemplo de registro:
 }
 ```
 
-Todas as demais rotas exigem:
+Leituras `GET` de categorias, pilotos, licenças, temporadas, corridas, clima e resultados são públicas. Operações de escrita nesses recursos exigem uma conta `ADMIN`:
 
 ```http
 Authorization: Bearer <accessToken>
 ```
+
+O cadastro público sempre cria contas `USER` e não permite escolher ou promover papéis. Para criar o primeiro `ADMIN`, configure `GRID_MANAGER_ADMIN_EMAIL` e `GRID_MANAGER_ADMIN_PASSWORD` no ambiente e inicie a aplicação. O bootstrap armazena a senha com BCrypt, não altera uma conta `ADMIN` já existente e interrompe o startup se o e-mail já pertencer a uma conta `USER`. Sem as duas variáveis, nenhum administrador é criado automaticamente.
 
 Senhas são armazenadas com BCrypt. O token expira em duas horas por padrão; esse período é configurado por `grid-manager.jwt.expiration`.
 
