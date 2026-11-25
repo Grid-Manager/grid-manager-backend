@@ -47,6 +47,14 @@ Para encerrar o banco local:
 docker compose down
 ```
 
+## Publicação no Render
+
+O arquivo `render.yaml` define uma API Docker de demonstração e um PostgreSQL 16 com acesso privado. Crie um Blueprint apontando para a branch que contém esses arquivos. O Render injeta as credenciais do banco e gera a chave JWT. A verificação de saúde consulta `GET /api/v1/categories`.
+
+Para habilitar a gestão no serviço publicado, configure `GRID_MANAGER_ADMIN_EMAIL` e `GRID_MANAGER_ADMIN_PASSWORD` como segredos do serviço antes de reiniciá-lo. Conecte o frontend com `API_BASE_URL=https://<serviço>.onrender.com` no ambiente do servidor Next.js.
+
+O Blueprint usa os planos Free. A API pode hibernar e o banco gratuito expira após 30 dias. Consulte os [limites do plano gratuito](https://render.com/docs/free) antes de cadastrar dados que precisem ser preservados.
+
 ## Configuração
 
 As propriedades locais estão em `src/main/resources/application.properties`.

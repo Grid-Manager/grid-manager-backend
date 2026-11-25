@@ -18,10 +18,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BlockedPilotNameTerm {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(name = "normalized_term", nullable = false, unique = true, length = 150)
-    private String normalizedTerm;
+  @Column(name = "normalized_term", nullable = false, unique = true, length = 150)
+  private String normalizedTerm;
 }
