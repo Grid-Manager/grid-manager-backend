@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: gridmanager_db
+    restart: always
+    environment:
+      POSTGRES_USER: gridmanager
+      POSTGRES_PASSWORD: gridmanager_pass
+      POSTGRES_DB: gridmanager_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
+    driver: local
