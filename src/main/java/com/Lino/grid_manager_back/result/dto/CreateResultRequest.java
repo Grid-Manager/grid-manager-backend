@@ -6,11 +6,11 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 
 public record CreateResultRequest(
-        @NotNull @Positive Long position,
-        @NotNull RaceStatusPilot raceStatusPilot,
-        @PositiveOrZero Integer penalties,
-        @PositiveOrZero Integer yellowFlags,
-        @PositiveOrZero Integer redFlags,
-        @PositiveOrZero Integer flagCount,
-        @NotNull Long pilotId,
-        @NotNull Long raceId) {}
+    @NotNull @Positive Long position,
+    @NotNull RaceStatusPilot raceStatusPilot,
+    @PositiveOrZero Integer penalties,
+    @PositiveOrZero Integer yellowFlags,
+    @PositiveOrZero Integer redFlags,
+    @PositiveOrZero Integer flagCount,
+    @NotNull Long pilotId,
+    @NotNull Long raceId) {}

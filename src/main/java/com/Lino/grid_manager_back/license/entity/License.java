@@ -23,13 +23,13 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class License {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(name = "license_number", nullable = false, unique = true, length = 100)
-    private String licenseNumber;
+  @Column(name = "license_number", nullable = false, unique = true, length = 100)
+  private String licenseNumber;
 
-    @OneToOne(mappedBy = "license", fetch = FetchType.LAZY)
-    private Pilot pilot;
+  @OneToOne(mappedBy = "license", fetch = FetchType.LAZY)
+  private Pilot pilot;
 }

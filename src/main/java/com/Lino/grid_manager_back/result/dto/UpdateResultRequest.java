@@ -5,9 +5,9 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 
 public record UpdateResultRequest(
-        @Positive Long position,
-        RaceStatusPilot raceStatusPilot,
-        @PositiveOrZero Integer penalties,
-        @PositiveOrZero Integer yellowFlags,
-        @PositiveOrZero Integer redFlags,
-        @PositiveOrZero Integer flagCount) {}
+    @Positive Long position,
+    RaceStatusPilot raceStatusPilot,
+    @PositiveOrZero Integer penalties,
+    @PositiveOrZero Integer yellowFlags,
+    @PositiveOrZero Integer redFlags,
+    @PositiveOrZero Integer flagCount) {}

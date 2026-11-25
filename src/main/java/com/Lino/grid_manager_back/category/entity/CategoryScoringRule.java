@@ -23,17 +23,17 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CategoryScoringRule {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "profile_id", nullable = false)
-    private CategoryScoringProfile profile;
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "profile_id", nullable = false)
+  private CategoryScoringProfile profile;
 
-    @Column(name = "finishing_position", nullable = false)
-    private Integer finishingPosition;
+  @Column(name = "finishing_position", nullable = false)
+  private Integer finishingPosition;
 
-    @Column(nullable = false)
-    private Integer points;
+  @Column(nullable = false)
+  private Integer points;
 }
