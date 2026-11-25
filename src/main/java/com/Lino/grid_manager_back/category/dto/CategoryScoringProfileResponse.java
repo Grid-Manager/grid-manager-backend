@@ -7,6 +7,7 @@ import java.util.Set;
 public record CategoryScoringProfileResponse(
     Long id,
     Long categoryId,
+    Long seasonId,
     RaceType raceType,
     LocalDate effectiveFrom,
     Integer fastestLapBonus,

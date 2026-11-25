@@ -89,8 +89,9 @@ public class CategoryController {
   }
 
   @Operation(
-      summary = "Configura a pontua\u00e7\u00e3o de uma categoria",
-      description = "Define regras por tipo de corrida e data de vig\u00eancia.")
+      summary = "Configura pontuação por categoria ou temporada",
+      description =
+          "Perfis de temporada têm precedência sobre o perfil da categoria para aquela temporada, por tipo de corrida e data de vigência.")
   @ApiResponses({
     @ApiResponse(responseCode = "201", description = "Perfil criado"),
     @ApiResponse(responseCode = "400", description = "Dados inv\u00e1lidos"),

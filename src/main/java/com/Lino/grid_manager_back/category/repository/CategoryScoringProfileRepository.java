@@ -8,10 +8,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CategoryScoringProfileRepository
     extends JpaRepository<CategoryScoringProfile, Long> {
-  boolean existsByCategoryIdAndRaceTypeAndEffectiveFrom(
-      Long categoryId, RaceType raceType, LocalDate effectiveFrom);
+  boolean existsByCategoryIdAndSeasonIdAndRaceTypeAndEffectiveFrom(
+      Long categoryId, Long seasonId, RaceType raceType, LocalDate effectiveFrom);
 
   Optional<CategoryScoringProfile>
-      findFirstByCategoryIdAndRaceTypeAndEffectiveFromLessThanEqualOrderByEffectiveFromDesc(
+      findFirstByCategoryIdAndSeasonIdIsNullAndRaceTypeAndEffectiveFromLessThanEqualOrderByEffectiveFromDesc(
           Long categoryId, RaceType raceType, LocalDate effectiveFrom);
+
+  Optional<CategoryScoringProfile>
+      findFirstByCategoryIdAndSeasonIdAndRaceTypeAndEffectiveFromLessThanEqualOrderByEffectiveFromDesc(
+          Long categoryId, Long seasonId, RaceType raceType, LocalDate effectiveFrom);
 }

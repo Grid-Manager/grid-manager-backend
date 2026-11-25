@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.util.Set;
 
 public record CreateCategoryScoringProfileRequest(
+    Long seasonId,
     @NotNull RaceType raceType,
     @NotNull LocalDate effectiveFrom,
     @NotNull @PositiveOrZero Integer fastestLapBonus,
